@@ -1,0 +1,789 @@
+:root {
+  --paper: #240706;
+  --ink: #f1e7d8;
+  --line: rgba(220, 151, 116, .55);
+  --edge: clamp(18px, 2.2vw, 42px);
+  --gutter: clamp(8px, .75vw, 13px);
+  --outer-band: clamp(26px, 5svh, 64px);
+  --strip-h: clamp(150px, 22svh, 285px);
+  --identity-gap: clamp(24px, 4.2svh, 48px);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; background: var(--paper); }
+body {
+  color: var(--ink);
+  font-family: 'Aktiv Grotesk', 'Proxima Nova', 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 300;
+  background-image: linear-gradient(rgba(20,0,0,.08),rgba(20,0,0,.08)), url('assets/blueprint-grid.png');
+  background-size: auto, 760px 760px;
+  background-repeat: repeat;
+}
+
+/* UNIVERSAL HOME COMPOSITION: breathing room / image strip / identity / image strip / breathing room */
+.splash {
+  height: 100svh;
+  min-height: 560px;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: var(--outer-band) var(--strip-h) minmax(0, 1fr) var(--strip-h) var(--outer-band);
+}
+
+.filmstrip {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  padding: var(--gutter) var(--edge);
+}
+.filmstrip-top {
+  grid-row: 2;
+}
+.filmstrip-bottom {
+  grid-row: 4;
+}
+.track {
+  display: flex;
+  flex-direction: row;
+  gap: var(--gutter);
+  height: 100%;
+  width: max-content;
+  will-change: transform;
+}
+.track img {
+  display: block;
+  height: 100%;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  object-fit: cover;
+  filter: saturate(.88) contrast(1.03);
+}
+.filmstrip-top .track { animation: driftLeft 88s linear infinite; }
+.filmstrip-bottom .track { animation: driftRight 96s linear infinite; transform: translateX(-50%); }
+@keyframes driftLeft { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes driftRight { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+
+.identity {
+  grid-row: 3;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  text-align: center;
+  padding: clamp(24px, 4svh, 52px) clamp(18px, 4vw, 72px);
+}
+.identity-inner {
+  width: min(640px, 88vw);
+  display: grid;
+  grid-template-rows: auto auto auto;
+  gap: var(--identity-gap);
+  align-items: center;
+}
+.discipline {
+  margin: 0;
+  width: 100%;
+  font-family: 'Aktiv Grotesk', 'Proxima Nova', 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 300;
+  font-size: clamp(9px, .9vw, 15px);
+  line-height: 1;
+  letter-spacing: .26em;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+.discipline span { margin: 0 .62em; opacity: .6; }
+
+h1 {
+  margin: 0;
+  width: 100%;
+  font-family: 'cormorant-garamond', serif;
+  font-weight: 300;
+  font-style: normal;
+  font-synthesis: none;
+  font-size: clamp(30px, 3.05vw, 54px);
+  line-height: .95;
+  letter-spacing: .002em;
+  white-space: nowrap;
+  padding: clamp(11px, 1.2vw, 16px) 0 clamp(10px, 1.1vw, 15px);
+  border-top: 1px solid rgba(241,231,216,.78);
+  border-bottom: 1px solid rgba(241,231,216,.78);
+}
+
+.portals {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(10px, 1.2vw, 18px);
+  width: min(520px, 100%);
+  justify-self: center;
+}
+.portals a {
+  color: var(--ink);
+  text-decoration: none;
+  border: 1px solid rgba(241,231,216,.72);
+  padding: 13px 18px 12px;
+  font-family: 'Aktiv Grotesk', 'Proxima Nova', 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 300;
+  font-size: clamp(11px, .88vw, 14px);
+  line-height: 1;
+  letter-spacing: .11em;
+  transition: .18s ease;
+  background: rgba(36,7,6,.18);
+  white-space: nowrap;
+}
+.portals a:hover { background: var(--ink); color: var(--paper); }
+
+@media (prefers-reduced-motion: reduce) {
+  .track { animation-play-state: paused !important; }
+}
+
+/* Short landscape windows: protect the middle block without changing the composition. */
+@media (orientation: landscape) and (max-height: 760px) {
+  :root {
+    --outer-band: clamp(20px, 5svh, 42px);
+    --strip-h: clamp(108px, 22svh, 170px);
+    --identity-gap: clamp(16px, 3.2svh, 28px);
+  }
+  .identity { padding-block: 18px; }
+  h1 { font-size: clamp(27px, 2.9vw, 44px); }
+  .discipline { font-size: clamp(8px, .78vw, 12px); }
+  .portals a { padding-block: 10px 9px; }
+}
+
+/* Portrait keeps the exact same top/bottom filmstrip logic, only scales the center typography. */
+@media (orientation: portrait) {
+  :root {
+    --outer-band: clamp(18px, 4svh, 42px);
+    --strip-h: clamp(118px, 21svh, 220px);
+    --edge: clamp(12px, 3vw, 24px);
+    --identity-gap: clamp(22px, 4svh, 40px);
+  }
+  .identity-inner { width: min(92vw, 610px); }
+  h1 { font-size: clamp(24px, 5.9vw, 42px); }
+  .discipline {
+    font-size: clamp(7px, 2.05vw, 11px);
+    letter-spacing: .16em;
+  }
+  .discipline span { margin-inline: .35em; }
+  .portals { width: min(420px, 100%); gap: 8px; }
+  .portals a { font-size: clamp(10px, 2.35vw, 12px); padding-inline: 9px; }
+}
+
+@media (orientation: portrait) and (max-width: 430px) {
+  :root {
+    --outer-band: 3svh;
+    --strip-h: 20svh;
+    --identity-gap: clamp(18px, 3.6svh, 30px);
+  }
+  .identity { padding-inline: 12px; }
+  h1 { font-size: clamp(21px, 5.6vw, 27px); }
+  .discipline { font-size: 7px; letter-spacing: .10em; }
+  .portals { width: 100%; }
+  .portals a { font-size: 10px; letter-spacing: .07em; padding: 10px 6px 9px; }
+}
+
+/* V12 — landscape returns to vertical image rails; portrait remains horizontal. */
+@media (orientation: landscape) {
+  .splash {
+    height: 100svh;
+    min-height: 560px;
+    display: grid;
+    grid-template-rows: 1fr;
+    grid-template-columns: clamp(220px, 24vw, 390px) minmax(0, 1fr) clamp(220px, 24vw, 390px);
+  }
+  .filmstrip {
+    width: 100%;
+    height: 100%;
+    padding: var(--outer-band) var(--gutter);
+  }
+  .filmstrip-top { grid-row: 1; grid-column: 1; }
+  .identity { grid-row: 1; grid-column: 2; }
+  .filmstrip-bottom { grid-row: 1; grid-column: 3; }
+  .track {
+    flex-direction: column;
+    width: 100%;
+    height: max-content;
+  }
+  .track img {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+  }
+  .filmstrip-top .track { animation: driftUp 105s linear infinite; }
+  .filmstrip-bottom .track { animation: driftDown 115s linear infinite; transform: translateY(-50%); }
+  @keyframes driftUp { from { transform: translateY(0); } to { transform: translateY(-50%); } }
+  @keyframes driftDown { from { transform: translateY(-50%); } to { transform: translateY(0); } }
+}
+
+/* Fine, warm drafting-pencil rules tucked tightly around the name. */
+h1 {
+  position: relative;
+  border: 0;
+  padding: 7px 0 6px;
+}
+h1::before,
+h1::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  opacity: .72;
+  background: linear-gradient(90deg,
+    rgba(210,157,82,.20) 0%,
+    rgba(225,177,102,.72) 8%,
+    rgba(211,153,75,.54) 31%,
+    rgba(231,184,105,.78) 55%,
+    rgba(205,146,70,.48) 82%,
+    rgba(224,174,94,.20) 100%);
+  box-shadow: 0 .55px 0 rgba(226,174,94,.18);
+}
+h1::before { top: 1px; transform: rotate(-.035deg); }
+h1::after { bottom: 0; transform: rotate(.045deg); }
+
+/* V13 — precision layout pass */
+
+/* Tighter, lighter drafting rules around the name. */
+h1 {
+  padding: 4px 0 3px;
+}
+h1::before,
+h1::after {
+  opacity: .82;
+  background: linear-gradient(90deg,
+    rgba(245,236,216,.18) 0%,
+    rgba(245,236,216,.72) 7%,
+    rgba(239,226,198,.58) 28%,
+    rgba(248,240,222,.84) 52%,
+    rgba(239,226,198,.60) 76%,
+    rgba(245,236,216,.18) 100%);
+  box-shadow: 0 .45px 0 rgba(244,231,204,.14);
+}
+h1::before { top: 0; }
+h1::after { bottom: 0; }
+
+/* Filled portal buttons by default; hover only adds a little typographic weight. */
+.portals a {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+  font-weight: 300;
+}
+.portals a:hover {
+  background: var(--ink);
+  color: var(--paper);
+  font-weight: 400;
+}
+
+/* Landscape: true viewport-centered identity with inset, narrow vertical film rails. */
+@media (orientation: landscape) {
+  :root {
+    --rail-width: clamp(128px, 14vw, 205px);
+    --rail-inset-x: clamp(28px, 4.8vw, 72px);
+    --rail-inset-y: clamp(34px, 7svh, 78px);
+  }
+
+  .splash {
+    position: relative;
+    display: block;
+    height: 100svh;
+    min-height: 520px;
+  }
+
+  .filmstrip {
+    position: absolute;
+    top: var(--rail-inset-y);
+    bottom: var(--rail-inset-y);
+    width: var(--rail-width);
+    height: auto;
+    padding: 0;
+    overflow: hidden;
+  }
+  .filmstrip-top {
+    left: var(--rail-inset-x);
+  }
+  .filmstrip-bottom {
+    right: var(--rail-inset-x);
+  }
+
+  .identity {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    text-align: center;
+    pointer-events: none;
+  }
+  .identity-inner {
+    width: min(640px, 52vw);
+    pointer-events: auto;
+  }
+
+  /* Let the rails absorb window compression before the typography does. */
+  h1 {
+    font-size: clamp(34px, 3.05vw, 46px);
+  }
+  .discipline {
+    font-size: clamp(10px, .9vw, 13px);
+  }
+  .portals a {
+    font-size: clamp(12px, .9vw, 14px);
+  }
+
+  .track {
+    flex-direction: column;
+    width: 100%;
+    height: max-content;
+  }
+  .track img {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+  }
+}
+
+/* In especially narrow landscape windows, squeeze imagery first, not the title block. */
+@media (orientation: landscape) and (max-width: 1050px) {
+  :root {
+    --rail-width: clamp(104px, 12vw, 145px);
+    --rail-inset-x: clamp(18px, 3vw, 34px);
+  }
+  .identity-inner { width: min(620px, 64vw); }
+  h1 { font-size: clamp(32px, 3.6vw, 42px); }
+  .discipline { font-size: clamp(9px, 1vw, 12px); }
+}
+
+/* Portrait keeps the horizontal strips and restores normal document flow. */
+@media (orientation: portrait) {
+  .splash {
+    position: static;
+    display: grid;
+  }
+  .filmstrip,
+  .identity {
+    position: static;
+  }
+  .filmstrip {
+    width: 100%;
+    height: 100%;
+    padding: var(--gutter) var(--edge);
+  }
+  .identity {
+    padding: clamp(24px, 4svh, 52px) clamp(18px, 4vw, 72px);
+    pointer-events: auto;
+  }
+  .identity-inner {
+    width: min(92vw, 610px);
+  }
+}
+
+/* V14 — landscape rails fill the full vertical viewport edge-to-edge. */
+@media (orientation: landscape) {
+  :root {
+    --rail-width: clamp(250px, 23vw, 390px);
+    --rail-inset-x: clamp(18px, 1.8vw, 32px);
+  }
+
+  .filmstrip {
+    top: 0;
+    bottom: 0;
+    height: 100svh;
+  }
+
+  .track img {
+    width: 100%;
+    height: auto;
+  }
+}
+
+/* Compress the rails before touching the center typography. */
+@media (orientation: landscape) and (max-width: 1250px) {
+  :root {
+    --rail-width: clamp(185px, 19vw, 250px);
+    --rail-inset-x: clamp(10px, 1.25vw, 18px);
+  }
+}
+
+@media (orientation: landscape) and (max-width: 950px) {
+  :root {
+    --rail-width: clamp(130px, 16vw, 185px);
+    --rail-inset-x: 8px;
+  }
+  .identity-inner { width: min(620px, 68vw); }
+}
+
+/* V15 — ornate drafting-label portals + category preview interaction. */
+.portals {
+  gap: clamp(12px, 1.35vw, 20px);
+}
+
+.portals a {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 58px;
+  padding: 0 22px;
+  border: 0;
+  background: transparent;
+  color: var(--paper);
+  overflow: visible;
+  isolation: isolate;
+  transition: color .18s ease, font-weight .18s ease, transform .18s ease;
+}
+
+.portals a .portal-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  z-index: -1;
+}
+
+.portal-fill {
+  fill: var(--ink);
+  stroke: none;
+}
+
+.portal-outer {
+  fill: none;
+  stroke: rgba(36,7,6,.90);
+  stroke-width: 2.1;
+  vector-effect: non-scaling-stroke;
+}
+
+.portal-inner {
+  fill: none;
+  stroke: rgba(36,7,6,.72);
+  stroke-width: .85;
+  vector-effect: non-scaling-stroke;
+}
+
+.portals a span {
+  position: relative;
+  z-index: 1;
+}
+
+.portals a:hover,
+.portals a:focus-visible {
+  background: transparent;
+  color: var(--paper);
+  font-weight: 400;
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.portals a:hover .portal-outer,
+.portals a:focus-visible .portal-outer {
+  stroke-width: 2.35;
+}
+
+/* Pause both image rails while either portal is previewing its body of work. */
+.splash.category-preview .track {
+  animation-play-state: paused !important;
+}
+
+.track img {
+  transform: scale(1);
+  transform-origin: center center;
+  outline: 1px solid rgba(241,231,216,0);
+  outline-offset: -1px;
+  box-shadow: 0 0 0 0 rgba(241,231,216,0);
+  transition: transform .34s cubic-bezier(.2,.72,.25,1),
+              outline-color .30s ease,
+              box-shadow .30s ease,
+              filter .30s ease;
+}
+
+.splash.preview-theater .track img[data-category~="theater"],
+.splash.preview-film .track img[data-category~="film"] {
+  transform: scale(1.035);
+  outline-color: rgba(244,237,222,.94);
+  box-shadow: 0 0 0 1px rgba(244,237,222,.22);
+  filter: saturate(.92) contrast(1.045) brightness(1.025);
+  z-index: 2;
+}
+
+@media (orientation: portrait) {
+  .portals a {
+    min-height: 54px;
+    padding-inline: 14px;
+  }
+}
+
+/* V16 — refined cartouche buttons + continuous category preview motion. */
+.portals {
+  width: min(480px, 100%);
+  gap: clamp(10px, 1.05vw, 16px);
+}
+
+.portals a {
+  min-height: 50px;
+  padding: 0 18px;
+  color: var(--ink);
+  background: transparent;
+  transform: none;
+}
+
+.portal-fill {
+  fill: rgba(241,231,216,0);
+  transition: fill .20s ease;
+}
+
+.portal-outer {
+  stroke: rgba(241,231,216,.92);
+  stroke-width: 1.45;
+  transition: stroke .20s ease, stroke-width .20s ease;
+}
+
+.portal-inner {
+  stroke: rgba(241,231,216,.66);
+  stroke-width: .62;
+  transition: stroke .20s ease, stroke-width .20s ease;
+}
+
+.portals a:hover,
+.portals a:focus-visible {
+  color: var(--paper);
+  font-weight: 400;
+  transform: none;
+}
+
+.portals a:hover .portal-fill,
+.portals a:focus-visible .portal-fill {
+  fill: var(--ink);
+}
+
+.portals a:hover .portal-outer,
+.portals a:focus-visible .portal-outer {
+  stroke: rgba(36,7,6,.88);
+  stroke-width: 1.55;
+}
+
+.portals a:hover .portal-inner,
+.portals a:focus-visible .portal-inner {
+  stroke: rgba(36,7,6,.64);
+  stroke-width: .68;
+}
+
+/* Keep the rails moving while a category is previewed. */
+.splash.category-preview .track {
+  animation-play-state: running !important;
+}
+
+/* Keep the full highlight visible inside narrow landscape rails. */
+.track img {
+  outline-width: 1px;
+  outline-style: solid;
+  outline-color: rgba(241,231,216,0);
+  outline-offset: -8px;
+}
+
+.splash.preview-theater .track img[data-category~="theater"],
+.splash.preview-film .track img[data-category~="film"] {
+  transform: scale(1.02);
+  outline-color: rgba(244,237,222,.96);
+  box-shadow: inset 0 0 0 1px rgba(244,237,222,.24);
+}
+
+@media (orientation: portrait) {
+  .portals a {
+    min-height: 48px;
+    padding-inline: 12px;
+  }
+}
+
+/* V17 — micro refinements */
+.portal-outer { stroke-width: .72; }
+.portals a:hover,
+.portals a:focus-visible { font-weight: 300; }
+.portals a:hover .portal-outer,
+.portals a:focus-visible .portal-outer { stroke-width: .78; }
+
+/* Highlight frame follows the enlarged image perimeter. */
+.track img {
+  outline: 0;
+  box-shadow: none;
+}
+.splash.preview-theater .track img[data-category~="theater"],
+.splash.preview-film .track img[data-category~="film"] {
+  outline: 1px solid rgba(244,237,222,.96);
+  outline-offset: -1px;
+  box-shadow: none;
+}
+
+/* V18 — line-weight inversion + reliable image highlight frame */
+/* Cartouche: lighter outer drafting line, heavier inner line. */
+.portal-outer { stroke-width: .55; }
+.portal-inner { stroke-width: 1.05; }
+.portals a:hover .portal-outer,
+.portals a:focus-visible .portal-outer { stroke-width: .55; }
+.portals a:hover .portal-inner,
+.portals a:focus-visible .portal-inner { stroke-width: 1.05; }
+
+/* Use a wrapper for the preview frame so all four sides remain visible
+   while the image itself enlarges inside the narrow rails. */
+.track .image-cell {
+  position: relative;
+  display: block;
+  width: 100%;
+  flex: 0 0 auto;
+  overflow: visible;
+}
+.track .image-cell img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  outline: 0 !important;
+  box-shadow: none !important;
+  transform: scale(1);
+  transform-origin: center center;
+  transition: transform .34s cubic-bezier(.2,.72,.25,1), filter .30s ease;
+}
+.track .image-cell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 2px solid rgba(244,237,222,0);
+  pointer-events: none;
+  z-index: 5;
+  transition: border-color .30s ease;
+}
+.splash.preview-theater .track .image-cell[data-category~="theater"]::after,
+.splash.preview-film .track .image-cell[data-category~="film"]::after {
+  border-color: rgba(244,237,222,.96);
+}
+.splash.preview-theater .track .image-cell[data-category~="theater"] img,
+.splash.preview-film .track .image-cell[data-category~="film"] img {
+  transform: scale(1.02);
+  filter: saturate(.92) contrast(1.045) brightness(1.025);
+}
+
+/* V19 — Adobe Jenson Pro Light for portal labels */
+.portals a,
+.portals a:hover,
+.portals a:focus-visible {
+  font-family: "adobe-jenson-pro", serif;
+  font-weight: 300;
+  font-style: normal;
+}
+
+/* V20 — restore horizontal image-cell geometry in portrait mode.
+   V18's wrapper was intentionally 100% wide for vertical landscape rails;
+   portrait needs each wrapper to size itself from the image instead. */
+@media (orientation: portrait) {
+  .track .image-cell {
+    width: auto;
+    height: 100%;
+    flex: 0 0 auto;
+    display: block;
+  }
+
+  .track .image-cell img {
+    width: auto;
+    height: 100%;
+    max-width: none;
+    max-height: 100%;
+    object-fit: cover;
+  }
+}
+
+/* V22 — highlight frame tracks the enlarged image on all four sides. */
+@media (orientation: landscape) {
+  /* Reserve a few pixels inside each rail so the scaled frame is not clipped
+     by the rail's overflow mask. */
+  .filmstrip {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+}
+
+.track .image-cell::after {
+  transform: scale(1);
+  transform-origin: center center;
+  transition: border-color .30s ease,
+              transform .34s cubic-bezier(.2,.72,.25,1);
+}
+
+.splash.preview-theater .track .image-cell[data-category~="theater"]::after,
+.splash.preview-film .track .image-cell[data-category~="film"]::after {
+  /* Match the image's 1.02 enlargement so the frame sits on the actual
+     highlighted perimeter rather than the image's original box. */
+  transform: scale(1.02);
+  border-color: rgba(244,237,222,.96);
+}
+
+/* V23 — third portfolio portal + Digital Sketchbook preview.
+   Everything above remains V22 so the proven rail, responsive and frame geometry stays intact. */
+.portals {
+  --portal-gap: clamp(10px, 1.05vw, 16px);
+  gap: var(--portal-gap);
+}
+
+.portals .portal-sketchbook {
+  grid-column: 1 / -1;
+  width: calc((100% - var(--portal-gap)) / 2);
+  justify-self: center;
+}
+
+/* Highlight 3D-model imagery while keeping the V22 rails continuously moving. */
+.splash.preview-sketchbook .track .image-cell[data-category~="sketchbook"]::after {
+  transform: scale(1.02);
+  border-color: rgba(244,237,222,.96);
+}
+
+.splash.preview-sketchbook .track .image-cell[data-category~="sketchbook"] img {
+  transform: scale(1.02);
+  filter: saturate(.92) contrast(1.045) brightness(1.025);
+}
+
+@media (orientation: portrait) and (max-width: 430px) {
+  .portals .portal-sketchbook {
+    width: calc((100% - var(--portal-gap)) / 2);
+  }
+}
+
+/* V24 — moving portfolio images are category links too.
+   Preserve all V22/V23 geometry and continuous motion. */
+.track a.image-cell {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.track a.image-cell:focus-visible {
+  outline: none;
+}
+
+/* Keyboard focus uses the same full-perimeter frame as hover preview. */
+.track a.image-cell:focus-visible::after {
+  transform: scale(1.02);
+  border-color: rgba(244,237,222,.96);
+}
+
+.track a.image-cell:focus-visible img {
+  transform: scale(1.02);
+  filter: saturate(.92) contrast(1.045) brightness(1.025);
+}
+
+/* V25 — image hover also illuminates its corresponding center portal. */
+.portals a.image-category-active {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* V26 — image-driven portal highlight uses the cartouche SVG, not a rectangular background. */
+.portals a.image-category-active {
+  background: transparent;
+  color: var(--paper);
+  font-weight: 300;
+}
+.portals a.image-category-active .portal-fill {
+  fill: var(--ink);
+}
+.portals a.image-category-active .portal-outer {
+  stroke: rgba(36,7,6,.88);
+  stroke-width: .55;
+}
+.portals a.image-category-active .portal-inner {
+  stroke: rgba(36,7,6,.64);
+  stroke-width: 1.05;
+}
