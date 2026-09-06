@@ -37,9 +37,9 @@ const filmTerms = ['ff2', 'archive81', 'belair', 'discoinferno', 'tlthtm', 'mtv'
 const sketchbookTerms = ['3dmodel'];
 
 const categoryMeta = {
-  theater: { href: '#theater', label: 'Theater' },
-  film: { href: '#film-tv', label: 'Film + Television' },
-  sketchbook: { href: '#digital-sketchbook', label: 'Digital Sketchbook' }
+  theater: { href: 'https://antonioferron.myportfolio.com/theater', label: 'Theater' },
+  film: { href: 'https://antonioferron.myportfolio.com/film-television', label: 'Film + Television' },
+  sketchbook: { href: 'https://antonioferron.myportfolio.com/digital-models', label: 'Digital Sketchbook' }
 };
 
 function categoriesFor(name) {
