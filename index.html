@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <!-- Antonio Portfolio V41 -->
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Antonio Troy Ferron — Art Direction, Set Design & Production Design</title>
@@ -72,6 +73,26 @@ body {
   background: var(--paper);
 }
 
+
+/* V37: every splash image carries the same oxblood wash. Matching category
+   images shed the wash on button hover and return to full color. */
+.image-cell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: rgba(46, 7, 6, .40);
+  opacity: 1;
+  transition: opacity .34s ease;
+}
+
+.splash.preview-theater .image-cell[data-category~="theater"]::after,
+.splash.preview-film .image-cell[data-category~="film"]::after,
+.splash.preview-sketchbook .image-cell[data-category~="sketchbook"]::after {
+  opacity: 0;
+}
+
 .image-cell img {
   display: block;
   width: 100%;
@@ -79,7 +100,7 @@ body {
   max-width: 100%;
   transform: scale(1);
   transform-origin: center center;
-  filter: saturate(.88) contrast(1.03);
+  filter: saturate(.94) contrast(1.02);
   transition:
     transform .42s cubic-bezier(.2,.72,.25,1),
     filter .34s ease;
@@ -111,7 +132,7 @@ body {
 .splash.preview-film .image-cell[data-category~="film"] img,
 .splash.preview-sketchbook .image-cell[data-category~="sketchbook"] img {
   transform: scale(1.065);
-  filter: saturate(.94) contrast(1.055) brightness(1.035);
+  filter: saturate(1) contrast(1.03) brightness(1.02);
 }
 
 /* Masthead floats above the image wall. The fade fills the viewport itself,
@@ -373,6 +394,51 @@ html, body { width:100%; height:100%; overflow:hidden; }
   .filmstrip .track { animation-duration:240s !important; }
 }
 
+/* V40: near-solid deep oxblood wash across the full image field at rest.
+   Matching category images return to full color on hover. The masthead itself
+   remains unbacked except for a soft horizontal oxblood veil between the name
+   rules while a category preview is active. */
+.image-cell::after {
+  background: rgba(14, 0, 1, .90) !important;
+}
+.identity::before {
+  display: none !important;
+  content: none !important;
+}
+
+/* During category preview, preserve readability only behind the name itself.
+   This gradient lives strictly inside the two drafting rules and dissolves
+   horizontally, so there are no visible rectangular edges. */
+h1 {
+  background: linear-gradient(
+    90deg,
+    rgba(14,0,1,0) 0%,
+    rgba(14,0,1,.36) 7%,
+    rgba(14,0,1,.72) 18%,
+    rgba(14,0,1,.82) 32%,
+    rgba(14,0,1,.84) 50%,
+    rgba(14,0,1,.82) 68%,
+    rgba(14,0,1,.72) 82%,
+    rgba(14,0,1,.36) 93%,
+    rgba(14,0,1,0) 100%
+  );
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  opacity: 1;
+}
+
+.splash:not(.category-preview) h1 {
+  background: transparent;
+}
+
+/* V41: while one category is active, keep the two non-active cartouches
+   sitting on a deep oxblood bed so their labels remain readable over any
+   full-color imagery moving behind them. The active/hovered cartouche still
+   uses the existing cream fill. */
+.splash.category-preview .portals a:not(:hover):not(:focus-visible) .portal-fill {
+  fill: rgba(14, 0, 1, .84);
+}
+
 </style>
 </head>
 <body>
@@ -517,11 +583,36 @@ function desiredColumnCount() {
   return window.innerWidth >= 1280 ? 3 : 2;
 }
 
+/* Curated order for the middle stream on three-column desktop layouts.
+   Membership stays the same; only the sequence changes for a more intentional
+   visual rhythm through film, models, and theater imagery. */
+const centerColumnOrder = [
+  'still_FF2_001.webp',
+  '3dmodel_001.webp',
+  'still_pilgrims_001.webp',
+  'set_FF2_001.webp',
+  '3dmodel_004.webp',
+  'still_primarytrust_002.webp',
+  'still_FF2_006.webp',
+  '3dmodel_006.webp',
+  '3dmodel_002.webp',
+  '3dmodel_007.webp'
+];
+
 function splitForColumns(count) {
   const ordered = balanceCategories(images);
   const columns = Array.from({ length: count }, () => []);
   ordered.forEach((name, index) => columns[index % count].push(name));
-  return columns.map(balanceCategories);
+  const balanced = columns.map(balanceCategories);
+
+  if (count === 3) {
+    const middleSet = new Set(balanced[1]);
+    const curatedMiddle = centerColumnOrder.filter(name => middleSet.has(name));
+    const leftovers = balanced[1].filter(name => !curatedMiddle.includes(name));
+    balanced[1] = [...curatedMiddle, ...leftovers];
+  }
+
+  return balanced;
 }
 
 function makeCell(name, index) {
@@ -597,6 +688,28 @@ document.querySelectorAll('.portals a[data-highlight]').forEach(button => {
   button.addEventListener('mouseleave', stopPreview);
   button.addEventListener('focus', () => startPreview(button.dataset.highlight));
   button.addEventListener('blur', stopPreview);
+});
+
+
+/* Safari can restore this page from the back/forward cache with CSS animations
+   visually frozen. Rebuild the moving wall when returning via browser Back,
+   then force a fresh animation timeline. */
+window.addEventListener('pageshow', (event) => {
+  const nav = performance.getEntriesByType?.('navigation')?.[0];
+  const returnedFromHistory = event.persisted || nav?.type === 'back_forward';
+  if (!returnedFromHistory) return;
+
+  stopPreview();
+  renderedColumnCount = 0;
+  renderImageWall(true);
+
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.track').forEach(track => {
+      track.style.animation = 'none';
+      void track.offsetHeight;
+      track.style.animation = '';
+    });
+  });
 });
 
 (async function ensureCormorantLight() {
