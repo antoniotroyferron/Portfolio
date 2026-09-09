@@ -36,12 +36,6 @@ const theaterTerms = ['chickenbiscuits', 'comet', 'dialm', 'pilgrims', 'primaryt
 const filmTerms = ['ff2', 'archive81', 'belair', 'discoinferno', 'tlthtm', 'mtv'];
 const sketchbookTerms = ['3dmodel'];
 
-const categoryMeta = {
-  theater: { href: 'https://antonioferron.myportfolio.com/theater', label: 'Theater' },
-  film: { href: 'https://antonioferron.myportfolio.com/film-television', label: 'Film + Television' },
-  sketchbook: { href: 'https://antonioferron.myportfolio.com/digital-models', label: 'Digital Sketchbook' }
-};
-
 function categoriesFor(name) {
   const lower = name.toLowerCase();
   const categories = [];
@@ -52,13 +46,11 @@ function categoriesFor(name) {
 }
 
 function primaryCategoryFor(name) {
-  const categories = categoriesFor(name).split(' ').filter(Boolean);
-  return categories[0] || 'other';
+  return categoriesFor(name).split(' ').filter(Boolean)[0] || 'other';
 }
 
-/* Keep each rail visually mixed: never allow more than two consecutive
-   images from the same portfolio category. This is deterministic, preserves
-   each category's internal source order, and also checks the infinite-loop seam. */
+/* Preserve the V24 mixing rule: no more than two consecutive images from
+   one category inside any visible vertical stream. */
 function balanceCategories(list) {
   const buckets = new Map();
   list.forEach(name => {
@@ -77,7 +69,8 @@ function balanceCategories(list) {
       .filter(([category]) => !(category === lastCategory && runLength >= 2))
       .sort((a, b) => b[1].length - a[1].length);
 
-    const [category, bucket] = candidates[0] || [...buckets.entries()].find(([, items]) => items.length);
+    const fallback = [...buckets.entries()].find(([, bucket]) => bucket.length);
+    const [category, bucket] = candidates[0] || fallback;
     result.push(bucket.shift());
 
     if (category === lastCategory) runLength += 1;
@@ -87,19 +80,13 @@ function balanceCategories(list) {
     }
   }
 
-  // Because each track is duplicated for the seamless loop, make sure the
-  // join between the end and beginning is mixed too. A rotation preserves
-  // the exact same image order while moving the seam to a safe location.
-  function cyclicallyValid(sequence) {
+  const cyclicallyValid = sequence => {
     const cats = sequence.map(primaryCategoryFor);
     for (let i = 0; i < cats.length; i++) {
-      const a = cats[i];
-      const b = cats[(i + 1) % cats.length];
-      const c = cats[(i + 2) % cats.length];
-      if (a === b && b === c) return false;
+      if (cats[i] === cats[(i + 1) % cats.length] && cats[i] === cats[(i + 2) % cats.length]) return false;
     }
     return true;
-  }
+  };
 
   if (!cyclicallyValid(result)) {
     for (let offset = 1; offset < result.length; offset++) {
@@ -107,59 +94,78 @@ function balanceCategories(list) {
       if (cyclicallyValid(rotated)) return rotated;
     }
   }
-
   return result;
 }
 
-const left = balanceCategories(images.filter((_, i) => i % 2 === 0));
-const right = balanceCategories(images.filter((_, i) => i % 2 === 1));
+function desiredColumnCount() {
+  return window.innerWidth >= 1280 ? 3 : 2;
+}
 
-function fill(id, list) {
-  const el = document.getElementById(id);
-  const doubled = [...list, ...list];
+function splitForColumns(count) {
+  const ordered = balanceCategories(images);
+  const columns = Array.from({ length: count }, () => []);
+  ordered.forEach((name, index) => columns[index % count].push(name));
+  return columns.map(balanceCategories);
+}
 
-  doubled.forEach((name, index) => {
-    const category = primaryCategoryFor(name);
-    const allCategories = categoriesFor(name);
-    const meta = categoryMeta[category];
+function makeCell(name, index) {
+  const cell = document.createElement('span');
+  cell.className = 'image-cell';
+  cell.dataset.filename = name;
+  cell.dataset.category = categoriesFor(name);
 
-    const img = document.createElement('img');
-    img.src = `assets/splash_opt/${name}`;
-    img.alt = '';
-    img.dataset.filename = name;
-    img.dataset.category = allCategories;
-    img.loading = index < 3 ? 'eager' : 'lazy';
-    img.fetchPriority = index < 2 ? 'high' : 'auto';
-    img.decoding = 'async';
+  const img = document.createElement('img');
+  img.src = `assets/splash_opt/${name}`;
+  img.alt = '';
+  img.dataset.filename = name;
+  img.dataset.category = categoriesFor(name);
+  img.loading = index < 3 ? 'eager' : 'lazy';
+  img.fetchPriority = index < 2 ? 'high' : 'auto';
+  img.decoding = 'async';
 
-    // The image itself is now the same category link/preview trigger as its
-    // corresponding center button, while the scrolling animation stays live.
-    const cell = document.createElement(meta ? 'a' : 'span');
-    cell.className = 'image-cell';
-    cell.dataset.filename = name;
-    cell.dataset.category = allCategories;
+  cell.appendChild(img);
+  return cell;
+}
 
-    if (meta) {
-      cell.href = meta.href;
-      cell.dataset.highlight = category;
-      cell.setAttribute('aria-label', `Open ${meta.label}`);
-    }
+let renderedColumnCount = 0;
+function renderImageWall(force = false) {
+  const count = desiredColumnCount();
+  if (!force && count === renderedColumnCount) return;
+  renderedColumnCount = count;
 
-    cell.appendChild(img);
-    el.appendChild(cell);
+  const wall = document.getElementById('imageWall');
+  wall.innerHTML = '';
+  document.querySelector('.splash').style.setProperty('--column-count', count);
+
+  splitForColumns(count).forEach((list, columnIndex) => {
+    const strip = document.createElement('div');
+    strip.className = 'filmstrip';
+
+    const track = document.createElement('div');
+    track.className = 'track';
+    track.id = `track${columnIndex + 1}`;
+
+    [...list, ...list].forEach((name, index) => {
+      track.appendChild(makeCell(name, index));
+    });
+
+    strip.appendChild(track);
+    wall.appendChild(strip);
   });
 }
 
-fill('leftTrack', left);
-fill('rightTrack', right);
+renderImageWall(true);
+
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => renderImageWall(false), 140);
+});
 
 const splash = document.querySelector('.splash');
 
 function startPreview(kind) {
   splash.classList.add('category-preview');
-  document.querySelectorAll('.portals a[data-highlight]').forEach(portal => {
-    portal.classList.toggle('image-category-active', portal.dataset.highlight === kind);
-  });
   splash.classList.toggle('preview-theater', kind === 'theater');
   splash.classList.toggle('preview-film', kind === 'film');
   splash.classList.toggle('preview-sketchbook', kind === 'sketchbook');
@@ -167,17 +173,14 @@ function startPreview(kind) {
 
 function stopPreview() {
   splash.classList.remove('category-preview', 'preview-theater', 'preview-film', 'preview-sketchbook');
-  document.querySelectorAll('.portals a.image-category-active').forEach(portal => {
-    portal.classList.remove('image-category-active');
-  });
 }
 
-/* Center buttons and moving images share the exact same preview behavior. */
-document.querySelectorAll('[data-highlight]').forEach(trigger => {
-  trigger.addEventListener('mouseenter', () => startPreview(trigger.dataset.highlight));
-  trigger.addEventListener('mouseleave', stopPreview);
-  trigger.addEventListener('focus', () => startPreview(trigger.dataset.highlight));
-  trigger.addEventListener('blur', stopPreview);
+/* Only the three word buttons trigger previews now. Images are passive. */
+document.querySelectorAll('.portals a[data-highlight]').forEach(button => {
+  button.addEventListener('mouseenter', () => startPreview(button.dataset.highlight));
+  button.addEventListener('mouseleave', stopPreview);
+  button.addEventListener('focus', () => startPreview(button.dataset.highlight));
+  button.addEventListener('blur', stopPreview);
 });
 
 (async function ensureCormorantLight() {
