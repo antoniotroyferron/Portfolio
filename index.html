@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <!-- Antonio Portfolio V41 -->
+  <!-- Antonio Portfolio V42 -->
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Antonio Troy Ferron — Art Direction, Set Design & Production Design</title>
@@ -437,6 +437,105 @@ h1 {
    uses the existing cream fill. */
 .splash.category-preview .portals a:not(:hover):not(:focus-visible) .portal-fill {
   fill: rgba(14, 0, 1, .84);
+}
+
+
+
+/* V42 — phone portrait only: two horizontal moving image bands.
+   Wider portrait and all landscape layouts remain exactly as V41. */
+@media (orientation: portrait) and (max-width: 560px) {
+  :root { --gutter: 6px; }
+
+  .image-wall {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: repeat(2, minmax(0, 1fr)) !important;
+    gap: var(--gutter) !important;
+    width: 100vw !important;
+    height: 100svh !important;
+  }
+
+  .filmstrip {
+    width: 100vw !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .track {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: stretch !important;
+    width: max-content !important;
+    height: 100% !important;
+    gap: var(--gutter) !important;
+    will-change: transform;
+  }
+
+  .track .image-cell {
+    width: auto !important;
+    height: 100% !important;
+    flex: 0 0 auto !important;
+  }
+
+  .track .image-cell img {
+    width: auto !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    object-fit: cover !important;
+  }
+
+  .filmstrip:nth-child(1) .track {
+    animation: v42Left 92s linear infinite !important;
+  }
+  .filmstrip:nth-child(2) .track {
+    animation: v42Right 104s linear infinite !important;
+  }
+
+  @keyframes v42Left {
+    from { transform: translate3d(0,0,0); }
+    to   { transform: translate3d(-50%,0,0); }
+  }
+  @keyframes v42Right {
+    from { transform: translate3d(-50%,0,0); }
+    to   { transform: translate3d(0,0,0); }
+  }
+
+  /* Fit the complete name on a true phone-width viewport. */
+  .identity {
+    padding: 14px 10px !important;
+  }
+  .identity-inner {
+    width: calc(100vw - 20px) !important;
+    max-width: calc(100vw - 20px) !important;
+    gap: 13px !important;
+  }
+  h1 {
+    width: 100% !important;
+    max-width: 100% !important;
+    font-size: clamp(24px, 7.15vw, 31px) !important;
+    line-height: .98 !important;
+    letter-spacing: -.012em !important;
+    white-space: nowrap !important;
+  }
+  .discipline {
+    font-size: clamp(6.5px, 1.95vw, 8.5px) !important;
+    letter-spacing: .105em !important;
+  }
+  .discipline span { margin-inline: .22em !important; }
+
+  .portals {
+    width: calc(100vw - 28px) !important;
+    max-width: 430px !important;
+    gap: 7px !important;
+  }
+  .portals a {
+    min-height: 45px !important;
+    padding-inline: 6px !important;
+    font-size: clamp(9px, 2.55vw, 11px) !important;
+    letter-spacing: .045em !important;
+  }
 }
 
 </style>
